@@ -13,7 +13,7 @@ pub static UART0_IMSC: *mut u32 = (0x101f1000 + 0x038) as *mut u32;
 pub static VIC_INTENABLE: *mut u32 = (0x10140000 + 0x010) as *mut u32;
 
 pub static mut CURSOR_X: u32 = 0;
-pub static mut CURSOR_Y: u32 = 0;
+pub static mut CURSOR_Y: u32 = 600;
 pub static CURSOR_HEIGHT: u32 = 16;
 pub static CURSOR_WIDTH: u32 = 8;
 pub static mut CURSOR_COLOR: u32 = 0x000000FF;
