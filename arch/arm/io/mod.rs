@@ -68,7 +68,7 @@ pub unsafe fn init(width: u32, height: u32)
 	ws(0x10120018, 0x82B);
 
     }
-    set_bg(0x00CCFF);
+    set_bg(0xCCFF00);
     set_fg(0xFAFCFF);
     set_cursor_color(0xFAFCFF);
     fill_bg();	

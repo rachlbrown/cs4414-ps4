@@ -41,6 +41,21 @@ pub unsafe fn drawstr(msg: &str) {
     super::super::io::set_fg(old_fg);
 }
 
+pub unsafe fn drawcstr(msg: cstr) {
+    let old_fg = super::super::io::FG_COLOR;
+    let mut x: u32 = 0x6699AAFF;
+    let mut ii=0; 
+    while ii<msg.p_cstr_i{
+	x = (x << 8) + (x >> 24); 
+	super::super::io::set_fg(x);
+	drawchar(*(((msg.p as uint) + ii) as *char)); 
+	ii+=1; 
+    }
+  
+    super::super::io::set_fg(old_fg);
+
+}
+
 pub unsafe fn putcstr(s: cstr)
 {
     let mut p = s.p as uint;
@@ -176,7 +191,7 @@ unsafe fn prompt(startup: bool) {
 }
 
 unsafe fn parse() {
-	if (buffer.streq(&"ls")) { 
+	/*if (buffer.streq(&"ls")) { 
 	    putstr( &"\na\tb") ;
 	    drawstr( &"\na    b") ;
 	};
@@ -203,7 +218,11 @@ unsafe fn parse() {
 		}
 	    }
 	    None        => { }
-	};
+	};*/
+	putstr(&"\n"); 
+	drawstr(&"\n"); 
+	putcstr(buffer); 
+	drawcstr(buffer); 
 	buffer.reset();
 }
 
@@ -236,7 +255,20 @@ impl cstr {
 		};
 		this
 	}
-
+/*
+#[allow(dead_code)]
+	pub unsafe fn to_str(&self) -> ~str {
+		let mut tempstr = ;
+		let mut retstr = tempstr.to_owned();
+		let mut ii: uint = 0;
+		while ii < self.p_cstr_i {
+			let tempaddr: *char = ((self.p as uint) + ii) as *char;
+			retstr.push_char(*tempaddr);
+			ii += 1;
+		}
+		return retstr;
+	}
+*/
 #[allow(dead_code)]
 	fn len(&self) -> uint { self.p_cstr_i }
 
@@ -344,4 +376,5 @@ impl cstr {
 
 
 }
+
 
