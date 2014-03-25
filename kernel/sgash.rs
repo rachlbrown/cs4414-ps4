@@ -14,21 +14,22 @@ pub static mut buffer: cstr = cstr {
 				p: 0 as *mut u8,
 				p_cstr_i: 0,
 				max: 0
-			      };
+			};
+
 pub fn putchar(key: char) {
     unsafe {
-	/*
-	 * We need to include a blank asm call to prevent rustc
-	 * from optimizing this part out
-	 */
-	asm!("");
-	io::write_char(key, io::UART0);
+		/*
+		 * We need to include a blank asm call to prevent rustc
+		 * from optimizing this part out
+		 */
+		asm!("");
+		io::write_char(key, io::UART0);
     }
 }
 
 fn putstr(msg: &str) {
     for c in slice::iter(as_bytes(msg)) {
-	putchar(*c as char);
+		putchar(*c as char);
     }
 }
 
@@ -36,9 +37,9 @@ pub unsafe fn drawstr(msg: &str) {
     //let old_fg = super::super::io::FG_COLOR;
     //let mut x: u32 = 0x6699AAFF;
     for c in slice::iter(as_bytes(msg)) {
-	//x = (x << 8) + (x >> 24); 
-	//super::super::io::set_fg(x);
-	drawchar(*c as char);
+		//x = (x << 8) + (x >> 24); 
+		//super::super::io::set_fg(x);
+		drawchar(*c as char);
     }
     //super::super::io::set_fg(old_fg);
 }
@@ -47,11 +48,11 @@ pub unsafe fn drawcstr(msg: cstr) {
     //let old_fg = super::super::io::FG_COLOR;
     //let mut x: u32 = 0x6699AAFF;
     let mut ii=0; 
-    while ii<msg.p_cstr_i{
-	//x = (x << 8) + (x >> 24); 
-	//super::super::io::set_fg(x);
-	drawchar(*(((msg.p as uint) + ii) as *char)); 
-	ii+=1; 
+    while ii<msg.p_cstr_i {
+		//x = (x << 8) + (x >> 24); 
+		//super::super::io::set_fg(x);
+		drawchar(*(((msg.p as uint) + ii) as *char)); 
+		ii+=1; 
     }
   
     //super::super::io::set_fg(old_fg);
@@ -61,10 +62,9 @@ pub unsafe fn drawcstr(msg: cstr) {
 pub unsafe fn putcstr(s: cstr)
 {
     let mut p = s.p as uint;
-    while *(p as *char) != '\0'
-    {
-	putchar(*(p as *char));
-	p += 1;
+    while *(p as *char) != '\0' {
+		putchar(*(p as *char));
+		p += 1;
     }
 }
 

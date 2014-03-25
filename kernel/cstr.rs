@@ -139,14 +139,11 @@ impl cstr {
 		loop {
 			if (*(selfp as *char) == '\0') { 
 				return (beg, end);
-			}
-			else if (*(selfp as *u8) == delim as u8) {
+			} else if (*(selfp as *u8) == delim as u8) {
 				found = true;
-			}
-			else if (!found) {
+			} else if (!found) {
 				beg.add_char(*(selfp as *u8));
-			}
-			else if (found) {
+			} else if (found) {
 				end.add_char(*(selfp as *u8));
 			};
 			selfp += 1;
@@ -155,6 +152,8 @@ impl cstr {
 }
 
 impl Container for cstr {
+
 #[allow(dead_code)]
 	fn len(&self) -> uint { self.p_cstr_i }
+	
 }
