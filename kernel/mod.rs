@@ -10,6 +10,8 @@ pub mod int;
 pub mod ptr;
 pub mod memory;
 pub mod sgash;
+pub mod cstr;
+pub mod constants;
 
 #[cfg(target_word_size = "32")]
 pub mod rt;
