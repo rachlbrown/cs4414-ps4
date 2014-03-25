@@ -13,7 +13,7 @@ pub static UART0_IMSC: *mut u32 = (0x101f1000 + 0x038) as *mut u32;
 pub static VIC_INTENABLE: *mut u32 = (0x10140000 + 0x010) as *mut u32;
 
 pub static mut CURSOR_X: u32 = 0;
-pub static mut CURSOR_Y: u32 = 600;
+pub static mut CURSOR_Y: u32 = 0;
 pub static CURSOR_HEIGHT: u32 = 16;
 pub static CURSOR_WIDTH: u32 = 8;
 pub static mut CURSOR_COLOR: u32 = 0x000000FF;
@@ -68,7 +68,7 @@ pub unsafe fn init(width: u32, height: u32)
 	ws(0x10120018, 0x82B);
 
     }
-    set_bg(0x222C38);
+    set_bg(0x00CCFF);
     set_fg(0xFAFCFF);
     set_cursor_color(0xFAFCFF);
     fill_bg();	
