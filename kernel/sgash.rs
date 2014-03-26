@@ -75,7 +75,9 @@ pub unsafe fn parsekey(x: char) {
 		
 	if (true) {
 		match x { 
-			13		=>	{ 
+			13		=>	{
+						putstr(&"\n"); 
+						drawstr(&"\n");
 						parse();
 						prompt(false); 
 			}
@@ -154,38 +156,31 @@ unsafe fn prompt(startup: bool) {
 }
 
 unsafe fn parse() {
-	/*if (buffer.streq(&"ls")) { 
-	    putstr( &"\na\tb") ;
-	    drawstr( &"\na    b") ;
-	};
-	match buffer.getarg(' ', 0) {
-	    Some(y)        => {
-		if(y.streq(&"cat")) {
-		    match buffer.getarg(' ', 1) {
-			Some(x)        => {
-			    if(x.streq(&"a")) { 
-				putstr( &"\nHowdy!"); 
-				drawstr( &"\nHowdy!"); 
-			    }
-			    if(x.streq(&"b")) {
-				putstr( &"\nworld!");
-				drawstr( &"\nworld!");
-			    }
+	let (mut cmdname, args) = buffer.split(' ');
+	match cmdname.as_str() {
+		"echo" => {
+				putcstr(args);
+	    		drawcstr(args);
+			},
+		"ls" => {
+			},
+		"cat" => {
+			},
+		"cd" => {
+			},
+		"rm" => {
+			},
+		"mkdir" => {
+			},
+		"pwd" => {
+			},
+		"wr" => {
+			},
+		_ => {
+				putstr(&"Unrecognized Command"); 
+				drawstr(&"Unrecognized Command");
 			}
-			None        => { }
-		    };
-		}
-		if(y.streq(&"open")) {
-		    putstr(&"\nTEST YO");
-		    drawstr(&"\nTEST YO");
-		}
-	    }
-	    None        => { }
-	};*/
-	putstr(&"\n"); 
-	drawstr(&"\n"); 
-	putcstr(buffer); 
-	drawcstr(buffer); 
+	}; 
 	buffer.reset();
 }
 
