@@ -63,13 +63,13 @@ impl Table {
         unsafe {
             // Enable IRQs [5]
             asm!("mov r2, sp
-              mrs r0, cpsr
-              bic r1, r0, #0x1F
+              mrs r0, cpsr      // get Program Status Register
+              bic r1, r0, #0x1F // go in IRQ mode
               orr r1, r1, #0x12
               msr cpsr, r1
-              mov sp, 0x19000
-              bic r0, r0, #0x80 
-              msr cpsr, r0
+              mov sp, 0x19000   // set IRQ stack
+              bic r0, r0, #0x80 // Enable IRQs
+              msr cpsr, r0      // go back in Supervisor mode
               mov sp, r2"
             ::: "r0", "r1", "r2", "cpsr");
 
