@@ -52,10 +52,10 @@ impl Descriptor {
 impl PageDirectory {
     pub unsafe fn enable(&self) {
         asm!("mov ip, 0
-              mcr p15, 0, ip, c7, c5, 0
-              mcr p15, 0, ip, c7, c10, 4
-              mcr p15, 0, r0, c2, c0, 0
-              mcr p15, 0, ip, c8, c7, 0"
+              mcr p15, 0, ip, c7, c5, 0     // invalidate I cache
+              mcr p15, 0, ip, c7, c10, 4    // drain WB
+              mcr p15, 0, r0, c2, c0, 0     // load page table pointer
+              mcr p15, 0, ip, c8, c7, 0     // invalidate I & D TLBs"
             :: "{r0}"(self) : "ip")
     }
 }
