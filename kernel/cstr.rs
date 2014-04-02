@@ -5,11 +5,9 @@ use core::str::*;
 use core::option::{Some, Option, None}; // Match statement
 use core::iter::Iterator;
 use core::container::Container;
-use core::cmp::Eq;
-use core::mem::transmute;
 use kernel::*;
-use kernel::memory::Allocator;
 use super::super::platform::*;
+use kernel::memory::Allocator;
 
 pub struct cstr {
 	p: *mut u8,
@@ -32,25 +30,31 @@ impl cstr {
 
 #[allow(dead_code)]
 	pub unsafe fn from_str(s: &str) -> cstr {
-		let mut retstr = cstr::new(256);
+		let mut this = cstr::new(256);
 		for c in slice::iter(as_bytes(s)) {
-			retstr.add_char(*c);
+			this.add_char(*c);
 		};
-		retstr
+		this
 	}
-
-	pub unsafe fn as_ptr(&self) -> *u8 {
-		transmute(self.p)
+/*
+#[allow(dead_code)]
+	pub unsafe fn to_str(&self) -> ~str {
+		let mut tempstr = ;
+		let mut retstr = tempstr.to_owned();
+		let mut ii: uint = 0;
+		while ii < self.p_cstr_i {
+			let tempaddr: *char = ((self.p as uint) + ii) as *char;
+			retstr.push_char(*tempaddr);
+			ii += 1;
+		}
+		return retstr;
 	}
-
-	pub unsafe fn as_str(&mut self) -> &str {
-        transmute((self.p, self.p_cstr_i))
-	}
+*/
 
 	// HELP THIS DOESN'T WORK THERE IS NO GARBAGE COLLECTION!!!
 	// -- TODO: exchange_malloc, exchange_free
 #[allow(dead_code)]
-	unsafe fn destroy(&mut self) { heap.free(self.p); }
+	unsafe fn destroy(&self) { heap.free(self.p); }
 
 	pub unsafe fn add_char(&mut self, x: u8) -> bool{
 		if (self.p_cstr_i == self.max) { return false; }
@@ -73,6 +77,21 @@ impl cstr {
 	}
 
 #[allow(dead_code)]
+	pub unsafe fn eq(&self, other: &cstr) -> bool {
+		if (self.len() != other.len()) { return false; }
+		else {
+			let mut x = 0;
+			let mut selfp: uint = self.p as uint;
+			let mut otherp: uint = other.p as uint;
+			while x < self.len() {
+				if (*(selfp as *char) != *(otherp as *char)) { return false; }
+				selfp += 1;
+				otherp += 1;
+				x += 1;
+			}
+			true
+		}
+	}
 
 	pub unsafe fn streq(&self, other: &str) -> bool {
 		let mut selfp: uint = self.p as uint;
@@ -83,7 +102,7 @@ impl cstr {
 		*(selfp as *char) == '\0'
 	}
 
-	pub unsafe fn getarg(&mut self, delim: char, mut k: uint) -> Option<cstr> {
+	pub unsafe fn getarg(&self, delim: char, mut k: uint) -> Option<cstr> {
 		let mut ind: uint = 0;
 		let mut found = k == 0;
 		let mut selfp: uint = self.p as uint;
@@ -112,7 +131,7 @@ impl cstr {
 	}
 
 #[allow(dead_code)]
-	pub unsafe fn split(&mut self, delim: char) -> (cstr, cstr) {
+	pub unsafe fn split(&self, delim: char) -> (cstr, cstr) {
 		let mut selfp: uint = self.p as uint;
 		let mut beg = cstr::new(256);
 		let mut end = cstr::new(256);
@@ -120,7 +139,7 @@ impl cstr {
 		loop {
 			if (*(selfp as *char) == '\0') { 
 				return (beg, end);
-			} else if (*(selfp as *u8) == delim as u8) && !found {
+			} else if (*(selfp as *u8) == delim as u8) {
 				found = true;
 			} else if (!found) {
 				beg.add_char(*(selfp as *u8));
@@ -136,27 +155,5 @@ impl Container for cstr {
 
 #[allow(dead_code)]
 	fn len(&self) -> uint { self.p_cstr_i }
-
-}
-
-impl Eq for cstr {
-
-#[allow(dead_code)]
-#[inline]
-	fn eq(&self, other: &cstr) -> bool {
-		if (self.len() != other.len()) { return false; }
-		else {
-			let mut x = 0;
-			let mut selfp: uint = self.p as uint;
-			let mut otherp: uint = other.p as uint;
-			unsafe {
-				while x < self.len() {
-					if (*((selfp + x) as *u8) != *((otherp + x) as *u8)) { return false; }
-					x += 1;
-				}
-			}
-			true
-		}
-	}
-
+	
 }

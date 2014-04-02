@@ -69,6 +69,7 @@ pub unsafe fn putcstr(s: cstr)
 }
 
 pub unsafe fn parsekey(x: char) {
+<<<<<<< HEAD
     let x = x as u8;
     // Set this to false to learn the keycodes of various keys!
     // Key codes are printed backwards because life is hard
@@ -100,6 +101,37 @@ pub unsafe fn parsekey(x: char) {
     else {
         keycode(x);
     }
+=======
+	let x = x as u8;
+	// Set this to false to learn the keycodes of various keys!
+	// Key codes are printed backwards because life is hard
+		
+	if (true) {
+		match x { 
+			13		=>	{ 
+						parse();
+						prompt(false); 
+			}
+			127		=>	{ 
+				if (buffer.delete_char()) { 
+					putchar('');
+					putchar(' ');
+					putchar(''); 
+					backspace();
+				}
+			}
+			_		=>	{ 
+				if (buffer.add_char(x)) { 
+					putchar(x as char);
+					drawchar(x as char);
+				}
+			}
+		}
+	}
+	else {
+		keycode(x);
+	}
+>>>>>>> parent of 9fdcdcd... Str and cstr equality implemented, including language feature to facilitate matching against strings
 }
 
 unsafe fn drawchar(x: char)
@@ -156,6 +188,7 @@ unsafe fn prompt(startup: bool) {
 }
 
 unsafe fn parse() {
+<<<<<<< HEAD
     let (mut cmdname, args) = buffer.split(' ');
     match cmdname.as_str() {
         "echo" => {
@@ -182,5 +215,40 @@ unsafe fn parse() {
             }
     }; 
     buffer.reset();
+=======
+	/*if (buffer.streq(&"ls")) { 
+	    putstr( &"\na\tb") ;
+	    drawstr( &"\na    b") ;
+	};
+	match buffer.getarg(' ', 0) {
+	    Some(y)        => {
+		if(y.streq(&"cat")) {
+		    match buffer.getarg(' ', 1) {
+			Some(x)        => {
+			    if(x.streq(&"a")) { 
+				putstr( &"\nHowdy!"); 
+				drawstr( &"\nHowdy!"); 
+			    }
+			    if(x.streq(&"b")) {
+				putstr( &"\nworld!");
+				drawstr( &"\nworld!");
+			    }
+			}
+			None        => { }
+		    };
+		}
+		if(y.streq(&"open")) {
+		    putstr(&"\nTEST YO");
+		    drawstr(&"\nTEST YO");
+		}
+	    }
+	    None        => { }
+	};*/
+	putstr(&"\n"); 
+	drawstr(&"\n"); 
+	putcstr(buffer); 
+	drawcstr(buffer); 
+	buffer.reset();
+>>>>>>> parent of 9fdcdcd... Str and cstr equality implemented, including language feature to facilitate matching against strings
 }
 
