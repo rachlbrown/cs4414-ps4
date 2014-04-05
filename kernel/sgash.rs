@@ -23,7 +23,7 @@ pub static mut buffer: cstr = cstr {
 pub static mut root_dir: dir = dir {
 	            is_dir: false,
 	            name: None,
-	            // child_dir: None,
+	            // child_dir: Option<dir>,
 	            child_file: None
 			};
 
@@ -36,7 +36,7 @@ pub static mut test_first_file: file = file {
 pub static mut current_dir: dir = dir {
 	            is_dir: false,
 	            name: None,
-	            // child_dir: None,
+	            // child_dir: Option<dir>,
 	            child_file: None
 			};
 
@@ -170,7 +170,6 @@ pub unsafe fn init() {
     buffer = cstr::new(256);
     root_dir = dir::new_dir();
     current_dir = dir::new_dir();
-    test_first_file = file::new_file();
     screen();
     prompt(true);
 }
@@ -193,29 +192,19 @@ unsafe fn parse() {
 			},
 		"ls" => {
 				//Testing file stuff
-				test_first_file.name = Some(cstr::from_str(&"test_file_name"));
+				test_first_file = file::new_file(cstr::from_str(&"test_file_name"));
 				test_first_file.value = Some(cstr::from_str(&"omg i'm a file"));
 				root_dir.child_file = Some(test_first_file);
+
+				//Testing a child dir
+				// let test_a_child_dir = dir::new_dir();
+				// root_dir.child_dir = test_a_child_dir.chil
 			},
 		"cat" => {
-				match current_dir.child_file {
-					Some(f) => {
-						match f.name {
-							Some(f_name) => {
-								if f_name.streq(args.as_str()) {
-									match f.value {
-										Some(v) => { putcstr(v); drawcstr(v); },
-										None => { putstr(&""); drawstr(&""); }
-									};								
-								} else {
-									putstr(&"File does not exist."); drawstr(&"File does not exist");
-								}
-							},
-							None => { putstr(&"File does not exist."); drawstr(&"File does not exist"); }
-						};
-					},
-					None => { putstr(&"File does not exist."); drawstr(&"File does not exist"); }
-				};
+				let try_file = file::new_file(args);
+				let val = try_file.read_file(current_dir);
+				putcstr(val);
+				drawcstr(val);
 			},
 		"cd" => {
 			},

@@ -14,6 +14,7 @@ use super::super::platform::*;
 use kernel::cstr::cstr;
 use super::super::platform::*;
 
+
 pub struct dir {
    is_dir: bool,
    name: Option<cstr>,
@@ -32,6 +33,7 @@ impl dir {
         let this = dir {
             is_dir: true,
             name: None,
+            // child_dir: None,
             child_file: None
         };
         this
@@ -39,13 +41,35 @@ impl dir {
 }
 
 impl file {
-    pub unsafe fn new_file() -> file {
+    pub unsafe fn new_file(f_name: cstr) -> file {
         let this = file {
             is_dir: false,
-            name: Some(cstr::new(256)),
-            value: Some(cstr::new(256))
+            name: Some(f_name),
+            value: Some(cstr::from_str(&""))
         };
         this
+    }
+
+    pub unsafe fn read_file(&self, current_dir: dir) -> cstr {
+        match current_dir.child_file {
+            Some(f) => {
+                match (f.name, self.name) {
+                    (Some(n1), Some(n2)) => {
+                        let mut mut_n2 = n2;
+                        if n1.streq(mut_n2.as_str()) {
+                            match f.value {
+                                Some(v) => v,
+                                None => cstr::from_str(&"Error: no value assigned")
+                            }
+                        } else {
+                            cstr::from_str(&"File does not exist.")
+                        }
+                    },
+                    _ => cstr::from_str(&"File does not exist.")
+                }
+            },
+            None => cstr::from_str(&"File does not exist.")
+        }
     }
 }
 
