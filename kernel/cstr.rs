@@ -39,7 +39,7 @@ impl cstr {
 		retstr
 	}
 
-	pub unsafe fn as_ptr(&self) -> *u8 {
+	pub unsafe fn as_ptr(&self) -> *mut u8 {
 		transmute(self.p)
 	}
 

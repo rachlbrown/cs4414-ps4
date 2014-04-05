@@ -2,10 +2,14 @@
 
 use core::*;
 use core::str::*;
+use core::ptr::*;
 use core::option::{Some, Option, None}; // Match statement
 use core::iter::Iterator;
 use kernel::*;
 use kernel::cstr::cstr;
+use core::mem::*;
+use kernel::fs::file;
+use kernel::fs::dir;
 use kernel::constants::{PROMPT, SPLASH};
 use super::super::platform::*;
 use kernel::memory::Allocator;
@@ -14,6 +18,26 @@ pub static mut buffer: cstr = cstr {
 				p: 0 as *mut u8,
 				p_cstr_i: 0,
 				max: 0
+			};
+
+pub static mut root_dir: dir = dir {
+	            is_dir: false,
+	            name: None,
+	            // child_dir: None,
+	            child_file: None
+			};
+
+pub static mut test_first_file: file = file {
+	            is_dir: false,
+	            name: None,
+	            value: None
+			};
+
+pub static mut current_dir: dir = dir {
+	            is_dir: false,
+	            name: None,
+	            // child_dir: None,
+	            child_file: None
 			};
 
 pub fn putchar(key: char) {
@@ -144,6 +168,9 @@ fn screen() {
 
 pub unsafe fn init() {
     buffer = cstr::new(256);
+    root_dir = dir::new_dir();
+    current_dir = dir::new_dir();
+    test_first_file = file::new_file();
     screen();
     prompt(true);
 }
@@ -153,18 +180,42 @@ unsafe fn prompt(startup: bool) {
 	if !startup {drawstr(PROMPT);}
 
 	buffer.reset();
+	root_dir.name = Some(cstr::from_str(&"root"));
+	current_dir = root_dir;
 }
 
 unsafe fn parse() {
-	let (mut cmdname, args) = buffer.split(' ');
+	let (mut cmdname, mut args) = buffer.split(' ');
 	match cmdname.as_str() {
 		"echo" => {
 				putcstr(args);
 	    		drawcstr(args);
 			},
 		"ls" => {
+				//Testing file stuff
+				test_first_file.name = Some(cstr::from_str(&"test_file_name"));
+				test_first_file.value = Some(cstr::from_str(&"omg i'm a file"));
+				root_dir.child_file = Some(test_first_file);
 			},
 		"cat" => {
+				match current_dir.child_file {
+					Some(f) => {
+						match f.name {
+							Some(f_name) => {
+								if f_name.streq(args.as_str()) {
+									match f.value {
+										Some(v) => { putcstr(v); drawcstr(v); },
+										None => { putstr(&""); drawstr(&""); }
+									};								
+								} else {
+									putstr(&"File does not exist."); drawstr(&"File does not exist");
+								}
+							},
+							None => { putstr(&"File does not exist."); drawstr(&"File does not exist"); }
+						};
+					},
+					None => { putstr(&"File does not exist."); drawstr(&"File does not exist"); }
+				};
 			},
 		"cd" => {
 			},
@@ -173,14 +224,28 @@ unsafe fn parse() {
 		"mkdir" => {
 			},
 		"pwd" => {
+				match current_dir.name {
+					Some(n) => {
+						putcstr(n);
+						drawcstr(n);
+					},
+					None => {
+						putstr(&"Current directory has no name!");
+						drawstr(&"Current directory has no name!");
+					}
+				};
 			},
 		"wr" => {
 			},
+		"init" => {
+			putstr(&"Initialized!");
+			drawstr(&"Initialized!");
+		}
 		_ => {
 				putstr(&"Unrecognized Command"); 
 				drawstr(&"Unrecognized Command");
 			}
-	}; 
+	};
 	buffer.reset();
 }
 
