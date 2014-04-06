@@ -108,7 +108,8 @@ impl<T> Vec<T> {
             None
         } else {
             unsafe {
-                Some(read_ptr(unchecked_get(self.as_slice(), self.len())))
+                let new_len = self.len - 1;
+                Some(read_ptr(unchecked_get(self.as_slice(), new_len)))
             }
         }
     }

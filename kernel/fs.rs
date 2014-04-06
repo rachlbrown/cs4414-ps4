@@ -39,6 +39,16 @@ impl dir {
         this
     }
 
+    // pub unsafe fn copy_dir(self) -> dir {
+    //     let retdir = dir {
+    //         path: self.path,
+    //         dir_name: self.dir_name,
+    //         dir_children: self.dir_children,
+    //         file_children: self.file_children
+    //     };
+    //     retdir
+    // }
+
     pub unsafe fn get_path(self) -> cstr {
         match self.path {
             Some(p) => p,
@@ -53,10 +63,26 @@ impl dir {
         }
     }
 
-    pub unsafe fn get_dir(&mut self) -> Option<dir> {
+    pub unsafe fn rm_dir(&mut self) -> Option<dir> {
         match self.dir_children {
             Some(ref mut children) => {
                 children.pop()
+            },
+            None => None
+        }
+    }
+
+    pub unsafe fn get_dir(&mut self) -> Option<dir> {
+        match self.dir_children {
+            Some(ref mut children) => {
+                children.top()
+                // let popped_dir = match children.pop() { 
+                //     Some(d) => d,
+                //     None => dir::new_dir(cstr::from_str(&"fail"), cstr::from_str(&"fail"))
+                // };
+                // let 
+                // children.push(popped_dir);
+                // Some(popped_dir)
             },
             None => None
         }

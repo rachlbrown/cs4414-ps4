@@ -227,7 +227,7 @@ unsafe fn parse() {
 		"cd" => {
 			},
 		"rm" => {
-				match current_dir.get_dir() {
+				match current_dir.rm_dir() {
 					Some(dir) => {
 						match dir.dir_name {
 							Some(name) => { putcstr(name); drawcstr(name); },
@@ -255,6 +255,7 @@ unsafe fn parse() {
 				let print_path = current_dir.get_path();
 				putcstr(print_path);
 				drawcstr(print_path);
+				current_dir.path = Some(print_path);
 				// match current_dir.path {
 				// 	Some(p) => {
 				// 		let mut draw_p = p;
