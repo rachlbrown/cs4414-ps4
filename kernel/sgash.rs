@@ -15,6 +15,8 @@ use kernel::constants::{PROMPT, SPLASH};
 use super::super::platform::*;
 use kernel::memory::Allocator;
 
+pub static mut INIT_ROOT: bool = false;
+
 pub static mut buffer: cstr = cstr {
 				p: 0 as *mut u8,
 				p_cstr_i: 0,
@@ -161,7 +163,7 @@ fn keycode(x: u8) {
 	putchar(' ');
 }
 
-fn screen() {
+unsafe fn screen() {
 	
 	putstr(SPLASH);
 
@@ -179,6 +181,9 @@ unsafe fn prompt(startup: bool) {
 
 	buffer.reset();
 
+}
+
+unsafe fn init_fs() {
     root_dir = dir::new_dir(cstr::from_str(&"/root"), cstr::from_str(&"root"));
 	current_dir = root_dir;
 }
@@ -197,17 +202,6 @@ unsafe fn parse() {
 				// root_dir.add_file(test_first_file);
 
 				//Testing get_dir
-				// let new_dir = dir::new_dir(cstr::from_str(&"new_dir_path"), cstr::from_str(&"new_dir_name"));
-				// current_dir.add_dir(new_dir);
-				match current_dir.get_dir() {
-					Some(dir) => {
-						match dir.dir_name {
-							Some(name) => { putcstr(name); drawcstr(name); },
-							None => { putstr(&"dir name didn't work"); drawstr(&"dir name didn't work"); }
-						};
-					},
-					None => { putstr(&"get first dir broke"); drawstr(&"get first dir broke"); }
-				};
 			},
 		"cat" => {
 				// let try_file = *(file::new_file(args));
@@ -233,6 +227,15 @@ unsafe fn parse() {
 		"cd" => {
 			},
 		"rm" => {
+				match current_dir.get_dir() {
+					Some(dir) => {
+						match dir.dir_name {
+							Some(name) => { putcstr(name); drawcstr(name); },
+							None => { putstr(&"dir name didn't work"); drawstr(&"dir name didn't work"); }
+						};
+					},
+					None => { putstr(&"get first dir broke"); drawstr(&"get first dir broke"); }
+				};
 			},
 		"mkdir" => {
 				match current_dir.path {
@@ -249,16 +252,20 @@ unsafe fn parse() {
 				}
 			},
 		"pwd" => {
-				match current_dir.path {
-					Some(p) => {
-						putcstr(p);
-						drawcstr(p);
-					},
-					None => {
-						putstr(&"Current directory has no path!");
-						drawstr(&"Current directory has no path!");
-					}
-				};
+				let print_path = current_dir.get_path();
+				putcstr(print_path);
+				drawcstr(print_path);
+				// match current_dir.path {
+				// 	Some(p) => {
+				// 		let mut draw_p = p;
+				// 		putstr(draw_p.as_str());
+				// 		drawstr(draw_p.as_str());
+				// 	},
+				// 	None => {
+				// 		putstr(&"Current directory has no path!");
+				// 		drawstr(&"Current directory has no path!");
+				// 	}
+				// };
 			},
 		"wr" => {
 				// Split arguments
@@ -279,6 +286,7 @@ unsafe fn parse() {
 
 			},
 		"init" => {
+    		init_fs();
 			putstr(&"Initialized!");
 			drawstr(&"Initialized!");
 		}

@@ -39,7 +39,7 @@ impl dir {
         this
     }
 
-    pub unsafe fn get_path(&self) -> cstr {
+    pub unsafe fn get_path(self) -> cstr {
         match self.path {
             Some(p) => p,
             None => cstr::from_str(&"Error: no path")
@@ -56,7 +56,7 @@ impl dir {
     pub unsafe fn get_dir(&mut self) -> Option<dir> {
         match self.dir_children {
             Some(ref mut children) => {
-                children.top()
+                children.pop()
             },
             None => None
         }
