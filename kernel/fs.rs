@@ -8,69 +8,114 @@ use core::container::Container;
 use core::cmp::Eq;
 use core::mem::transmute;
 use kernel::cstr::cstr;
+use kernel::vec::Vec;
 use kernel::*;
 use kernel::memory::Allocator;
 use super::super::platform::*;
 use kernel::cstr::cstr;
 use super::super::platform::*;
 
-
 pub struct dir {
-   is_dir: bool,
-   name: Option<cstr>,
-   // child_dir: Option<dir>,
-   child_file: Option<file>
+    path: Option<cstr>,
+    dir_name: Option<cstr>,
+    dir_children: Option<Vec<dir>>,
+    file_children: Option<Vec<file>>
 }
 
 pub struct file {
-    is_dir: bool,
-    name: Option<cstr>,
+    path: Option<cstr>,
+    file_name: Option<cstr>,
     value: Option<cstr>
 }
 
 impl dir {
-    pub unsafe fn new_dir() -> dir {
+    pub unsafe fn new_dir(p: cstr, n: cstr) -> dir {
         let this = dir {
-            is_dir: true,
-            name: None,
-            // child_dir: None,
-            child_file: None
+            path: Some(p),
+            dir_name: Some(n),
+            dir_children: Some(Vec::new()),
+            file_children: Some(Vec::new())
         };
         this
     }
+
+    pub unsafe fn get_path(&self) -> cstr {
+        match self.path {
+            Some(p) => p,
+            None => cstr::from_str(&"Error: no path")
+        }
+    }
+
+    pub unsafe fn add_dir(&mut self, d: dir) {
+        match self.dir_children {
+            Some(ref mut children) => { children.push(d); },
+            None => ()
+        }
+    }
+
+    pub unsafe fn get_dir(&mut self) -> Option<dir> {
+        match self.dir_children {
+            Some(ref mut children) => {
+                children.top()
+            },
+            None => None
+        }
+    }
+
+    // pub unsafe fn add_file(&mut self, f: ~file) {
+    //     self.child_file = Some(f);
+    // }
 }
 
 impl file {
-    pub unsafe fn new_file(f_name: cstr) -> file {
+    pub unsafe fn new_file(p: cstr, f_name: cstr) -> file {
         let this = file {
-            is_dir: false,
-            name: Some(f_name),
-            value: Some(cstr::from_str(&""))
+            path: Some(p),
+            file_name: Some(f_name),
+            value: None
         };
         this
     }
 
-    pub unsafe fn read_file(&self, current_dir: dir) -> cstr {
-        match current_dir.child_file {
-            Some(f) => {
-                match (f.name, self.name) {
-                    (Some(n1), Some(n2)) => {
-                        let mut mut_n2 = n2;
-                        if n1.streq(mut_n2.as_str()) {
-                            match f.value {
-                                Some(v) => v,
-                                None => cstr::from_str(&"Error: no value assigned")
-                            }
-                        } else {
-                            cstr::from_str(&"File does not exist.")
-                        }
-                    },
-                    _ => cstr::from_str(&"File does not exist.")
-                }
-            },
-            None => cstr::from_str(&"File does not exist.")
+    pub unsafe fn read_file(&self) -> cstr {
+        match self.value {
+            Some(v) => v,
+            None => cstr::from_str(&"Error: no value assigned")
         }
     }
+
+    // pub unsafe fn write_file(&self, val: cstr) -> file {
+    //     let mut new_file = self.copy_file();
+    //     new_file.value = Some(val);
+    //     new_file
+    // }
+
+    // pub unsafe fn copy_file(&self) -> file {
+    //     let new_file = file {
+    //         is_dir: false,
+    //         name: self.name,
+    //         value: self.value
+    //     };
+    //     new_file
+    // }
+
+    // pub unsafe fn exists(&self, current_dir: dir) -> bool {
+    //     match current_dir.child_file {
+    //         Some(f) => {
+    //             match (f.name, self.name) {
+    //                 (Some(n1), Some(mut n2)) => {
+    //                     if n1.streq(n2.as_str()) {
+    //                         true
+    //                     } else {
+    //                         false
+    //                     }
+    //                 },
+    //                 _ => false
+    //             }
+    //         },
+    //         None => false
+    //     }    
+    // }
 }
 
 //THINGS THE TAS DID THAT I'M CHOOSING TO IGNORE RIGHT NOW

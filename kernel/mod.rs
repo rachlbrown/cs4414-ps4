@@ -13,6 +13,7 @@ pub mod sgash;
 pub mod cstr;
 pub mod fs;
 pub mod constants;
+pub mod vec;
 
 #[cfg(target_word_size = "32")]
 pub mod rt;
