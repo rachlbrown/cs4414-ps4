@@ -11,12 +11,14 @@ use kernel::vec::Vec;
 use core::mem::*;
 use kernel::fs::file;
 use kernel::fs::dir;
+use kernel::fs::curr_dir;
 use kernel::constants::{PROMPT, SPLASH};
 use super::super::platform::*;
 use kernel::memory::Allocator;
 
 pub static mut INIT_ROOT: bool = false;
-
+pub static mut commandvec: Option<Vec<cstr>> = None;
+pub static mut length: uint = 0;
 pub static mut buffer: cstr = cstr {
 				p: 0 as *mut u8,
 				p_cstr_i: 0,
@@ -30,18 +32,18 @@ pub static mut root_dir: dir = dir {
 	            file_children: None
 			};
 
-// pub static mut test_first_file: file = file {
-// 	            is_dir: false,
-// 	            name: None,
-// 	            value: None
-// 			};
-
 pub static mut current_dir: dir = dir {
 	            path: None,
 	            dir_name: None,
 	            dir_children: None,
 	            file_children: None
 			};
+
+// pub static mut test_first_file: file = file {
+// 	            is_dir: false,
+// 	            name: None,
+// 	            value: None
+// 			};
 
 pub fn putchar(key: char) {
     unsafe {
@@ -185,44 +187,77 @@ unsafe fn prompt(startup: bool) {
 
 unsafe fn init_fs() {
     root_dir = dir::new_dir(cstr::from_str(&"/root"), cstr::from_str(&"root"));
-	current_dir = root_dir;
+    current_dir = root_dir;
 }
 
 unsafe fn parse() {
 	let (mut cmdname, mut args) = buffer.split(' ');
+	match commandvec{
+	Some (ref mut cv) => {cv.push(cmdname);
+				length+=1; }, 
+	None => {
+		putstr(&"not push"); 
+		drawstr(&"not push"); 
+		} 
+	}
+
 	match cmdname.as_str() {
 		"echo" => {
 				putcstr(args);
 	    		drawcstr(args);
 			},
-		"ls" => {
-				//Testing file stuff
-				// let mut test_first_file = file::new_file(cstr::from_str(&"test_file_name"));
-				// (*test_first_file).value = Some(cstr::from_str(&"omg i'm a file"));
-				// root_dir.add_file(test_first_file);
+		"history" => {
+				 
+	
+				match commandvec{
+					Some(mut cv) =>{ 
+						 
+						while length != 0 {
+						let printcommand = cv.pop(); 
+						length -= 1; 
+						match printcommand{
+							Some(pc) => 	{
+									putcstr(pc); 
+									drawcstr(pc);
+									putstr(&"\n"); 
+									drawstr(&"\n");  				
+				 					}, 
+							None => {
+						putstr(&"hello2"); 
+						drawstr(&"hello2"); 
+						} 
+						
+						}
 
-				//Testing get_dir
+								}
+					}, 
+					None => {
+						putstr(&"hello"); 
+						drawstr(&"hello"); 
+						}		 
+
+				}
+			
+			     }, 
+		"ls" => {
+				let found_dir = current_dir.get_dir(cstr::from_str(&"new_dir"));
+				putcstr(found_dir);
+				drawcstr(found_dir);
 			},
 		"cat" => {
-				// let try_file = *(file::new_file(args));
-				// let dir_file = root_dir.child_file;
-				// root_dir.child_file = dir_file;
-				// if try_file.exists(root_dir) {
-				// match root_dir.child_file {
-				// 	Some(f) => {
-				// 		root_dir.child_file = Some(~((*f).copy_file()));
-				// 		let val = f.read_file();
-				// 		putcstr(val); drawcstr(val);
-				// 	},
-				// 	_ => { 
-				// 		putcstr(cstr::from_str(&"File should exist but it doesn't..."));
-				// 		drawcstr(cstr::from_str(&"File should exist but it doesn't..."));
-				// 	}
-				// };
-				// } else {
-				// 	putcstr(cstr::from_str(&"File does not exist."));
-				// 	drawcstr(cstr::from_str(&"File does not exist."));
-				// };
+				let file = current_dir.get_file();
+				match file {
+					Some(f) => {
+						match f.value {
+							Some(v) => {putcstr(v); drawcstr(v);},
+							None => {putstr(&"no value"); drawstr(&"no value");}
+						}
+					},
+					None => {
+						putstr(&"file does not exist");
+						drawstr(&"file does not exist");
+					}
+				};
 			},
 		"cd" => {
 			},
@@ -238,56 +273,35 @@ unsafe fn parse() {
 				};
 			},
 		"mkdir" => {
-				match current_dir.path {
-					Some(p) => {
-						let new_dir = dir::new_dir(p, args);
-						current_dir.add_dir(new_dir);
-						putstr(&"Pushed the new dir correctly!");
-						drawstr(&"Pushed the new dir correctly!");
-					},
-					None => {
-						putstr(&"Current directory has no path!");
-						drawstr(&"Current directory has no path!");					
-					}
-				}
+				let dir_path = current_dir.get_path();
+				let new_dir = dir::new_dir(dir_path, args);
+				current_dir.add_dir(new_dir);
+				// current_dir.path = Some(dir_path);
+				putstr(&"Pushed the new dir correctly!");
+				drawstr(&"Pushed the new dir correctly!");
 			},
 		"pwd" => {
 				let print_path = current_dir.get_path();
 				putcstr(print_path);
 				drawcstr(print_path);
-				current_dir.path = Some(print_path);
-				// match current_dir.path {
-				// 	Some(p) => {
-				// 		let mut draw_p = p;
-				// 		putstr(draw_p.as_str());
-				// 		drawstr(draw_p.as_str());
-				// 	},
-				// 	None => {
-				// 		putstr(&"Current directory has no path!");
-				// 		drawstr(&"Current directory has no path!");
-				// 	}
-				// };
+				// current_dir.path = Some(print_path);
 			},
 		"wr" => {
 				// Split arguments
-				// let (file_arg, val_arg) = args.split(' ');
-				// let try_file = file::new_file(file_arg);
-				// // if try_file.exists(root_dir) {
-				// 	match root_dir.child_file {
-				// 		Some(f) => { root_dir.child_file = Some(~f.write_file(val_arg)); },
-				// 		None => {
-				// 			putcstr(cstr::from_str(&"File should exist but it doesn't..."));
-				// 			drawcstr(cstr::from_str(&"File should exist but it doesn't..."));
-				// 		}
-				// 	};
-				// } else {
-				// 	putcstr(cstr::from_str(&"File does not exist."));
-				// 	drawcstr(cstr::from_str(&"File does not exist."));
-				// };
+				let (file_arg, val_arg) = args.split(' ');
+				let dir_path = current_dir.get_path();
+
+				let mut new_file = file::new_file(dir_path, file_arg);
+				new_file.write_file(val_arg);
+				current_dir.add_file(new_file);
+
+				// current_dir.path = Some(dir_path);
+
 
 			},
 		"init" => {
     		init_fs();
+    		commandvec = Some(Vec::new());
 			putstr(&"Initialized!");
 			drawstr(&"Initialized!");
 		}

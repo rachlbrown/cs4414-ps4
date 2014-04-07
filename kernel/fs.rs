@@ -6,7 +6,8 @@ use core::option::{Some, Option, None}; // Match statement
 use core::iter::Iterator;
 use core::container::Container;
 use core::cmp::Eq;
-use core::mem::transmute;
+use core::mem::{move_val_init, transmute};
+use core::ptr::{read_ptr};
 use kernel::cstr::cstr;
 use kernel::vec::Vec;
 use kernel::*;
@@ -20,6 +21,10 @@ pub struct dir {
     dir_name: Option<cstr>,
     dir_children: Option<Vec<dir>>,
     file_children: Option<Vec<file>>
+}
+
+pub struct curr_dir {
+    p: *dir
 }
 
 pub struct file {
@@ -41,6 +46,8 @@ impl dir {
 
     // pub unsafe fn copy_dir(self) -> dir {
     //     let retdir = dir {
+    //         p: self.p,
+    //         mut_p: self.mut_p,
     //         path: self.path,
     //         dir_name: self.dir_name,
     //         dir_children: self.dir_children,
@@ -72,25 +79,63 @@ impl dir {
         }
     }
 
-    pub unsafe fn get_dir(&mut self) -> Option<dir> {
+    // pub unsafe fn get_dir(&mut self) -> Option<dir> {
+    //     match self.dir_children {
+    //         Some(ref mut children) => {
+    //             children.top()
+    //         },
+    //         None => None
+    //     }
+    // }
+
+    pub unsafe fn get_dir(self, name: cstr) -> cstr {
+        let mut retstr = cstr::new(256);
         match self.dir_children {
+            Some(mut children) => {
+                // children.move_iter();
+                while children.len() != 0 {
+                    let mut top_dir = children.pop();
+                    match top_dir {
+                        Some(d) => {
+                            match d.dir_name {
+                                Some(mut n) => {
+                                    if name.streq(n.as_str()) {
+                                        retstr = cstr::from_str(&"found the dir!")
+                                    } else {
+                                        retstr = cstr::from_str(&"dir not found!")
+                                    }
+                                },
+                                None => retstr = cstr::from_str(&"dir not found!")
+                            }
+                        },
+                        None => retstr = cstr::from_str(&"dir not found!")
+                    }
+                }
+            },
+            None => retstr = cstr::from_str(&"dir not found!")
+        };
+        retstr
+    }
+
+    pub unsafe fn get_file(&mut self) -> Option<file> {
+        match self.file_children {
             Some(ref mut children) => {
                 children.top()
-                // let popped_dir = match children.pop() { 
-                //     Some(d) => d,
-                //     None => dir::new_dir(cstr::from_str(&"fail"), cstr::from_str(&"fail"))
-                // };
-                // let 
-                // children.push(popped_dir);
-                // Some(popped_dir)
             },
             None => None
         }
     }
 
-    // pub unsafe fn add_file(&mut self, f: ~file) {
-    //     self.child_file = Some(f);
-    // }
+    pub unsafe fn add_file(&mut self, f: file) {
+        match self.file_children {
+            Some(ref mut children) => { children.push(f); },
+            None => ()
+        }
+    }
+
+    pub unsafe fn access_dir(ptr: *dir) -> dir {
+        read_ptr(ptr)
+    }
 }
 
 impl file {
@@ -110,11 +155,9 @@ impl file {
         }
     }
 
-    // pub unsafe fn write_file(&self, val: cstr) -> file {
-    //     let mut new_file = self.copy_file();
-    //     new_file.value = Some(val);
-    //     new_file
-    // }
+    pub unsafe fn write_file(&mut self, val: cstr) {
+        self.value = Some(val);
+    }
 
     // pub unsafe fn copy_file(&self) -> file {
     //     let new_file = file {
@@ -144,65 +187,8 @@ impl file {
     // }
 }
 
-//THINGS THE TAS DID THAT I'M CHOOSING TO IGNORE RIGHT NOW
-// use core::*;
-// use core::str::*;
-// use core::option::{Some, Option, None}; // Match statement
-// use core::iter::Iterator;
-// use core::vec::Vec;
-// use super::super::platform::*;
-
-
-// pub fn open(node: *tree_node, file: cstr) -> (*tree_node, bool, bool)
-// {
-//     if dir.isLeaf() || file == ""
-//     {
-// 	return (node, dir.isLeaf(), file == "");
-//     }
-//     let mut children: uint = (*node).child_count;
-//     let mut i: uint = 0;
-//     let mut split = file.before('/');
-//     while i < children
-//     {
-// 	if (*node).children[i].name == k
-// 	{
-// 	    return open((*node).children[i], file.remainder('/'));
-// 	} else
-// 	{
-// 	    i += 1;
-// 	}
-//     }
-//     return cstr::new();
-// }
-
-// pub fn append(node: *tree_node, file: cstr, content: cstr) -> bool
-// {
-//     let (mut f, _, _) = open(node, file);
-//     if f == cstr::new()
-//     {
-// 	return false;
-//     }
-//     let mut x = 0;
-//     let mut f_contents = (*f).contents;
-//     while x < content.len()
-//     {
-// 	let b = f_contents.push_char(content.char_at(x));
-// 	if !b
-// 	{
-// 	    return false;
-// 	}
-//     }
-//     let (*f).contents = f_contents;
-//     return true;
-// }
-
-// pub fn new(node: *tree_node, dir: cstr, name: cstr) -> bool
-// {
-//     let (mut n, _, _) = open(node, file);
-//     if !n.isLeaf()
-//     {
-// 	n.insert(name);
-//     }
-//     return false;
-
-// }
+impl curr_dir {
+    pub unsafe fn get_current_dir(&self) -> dir {
+        read_ptr(self.p)
+    }
+}
